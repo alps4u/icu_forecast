@@ -1,5 +1,5 @@
 <<<<<<< HEAD
-# Forecasting 7-Day ICU Bed Demand via Patient Deterioration Modeling
+# Forecasting ICU Bed Demand via Patient Deterioration Modeling
 IE7275 Group A project — *I See You, ICU*.
 Authors: Ka Won Cho, Minh Tuong Le, Shanti Ram Pokhrel.
 
