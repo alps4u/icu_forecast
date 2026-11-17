@@ -8,9 +8,8 @@ Authors: Ka Won Cho, Minh Tuong Le, Shanti Ram Pokhrel.
 ### Problem Statement
 Intensive Care Units (ICUs) face chronic bed capacity and staffing bottlenecks, particularly in healthcare systems strained by demographic aging. Unplanned transfers from general hospital wards into ICUs create severe, unpredictable surges in critical care demand. Conventional capacity planning relies heavily on historical rolling averages (e.g., historical bed utilization), which completely ignore the real-time physiological deterioration of currently admitted inpatients. Conversely, bedside early warning systems (e.g., NEWS2) offer very short lead times (4–12 hours), which is insufficient for forward operational planning.
 
-This project implements a hierarchical predictive framework that combines micro-level clinical prediction with macro-level capacity forecasting:
-1. **Micro Model (Patient Level):** Predicts the 24-hour and 48-hour probabilities of unplanned ICU transfer for high-risk, frequently admitted inpatients currently on general floors 
-2. **Macro Aggregator (Ward Level):** Aggregates individual calibrated transfer risks across a closed cohort of inpatients to project the expected total 7-day ICU bed demand with exact analytical 95% confidence intervals using a Poisson-Binomial distribution model.
+This project is to develop a predictive model to estimate weekly ICU transfer demand driven by frequently admitted inpatients. The project addresses the following research question:
+> **For frequently admitted inpatients, can we predict the risk of unplanned ICU transfer within short-term windows (24 and 48 hours), and how much operational and clinical value does a clinical watchlist provide when it flags the 10% of cases with the highest predicted risk?**
 
 ### Intended Users
 - **Primary Users (Hospital Operation managers & Bed Coordinators):** Utilize the 7-day aggregate bed demand forecaster to proactively rebalance critical care nursing rosters, allocate respiratory equipment, and adjust elective post-operative surgical schedules before bottlenecks occur.
