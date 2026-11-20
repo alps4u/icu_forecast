@@ -12,8 +12,7 @@ This project is to develop a predictive model to estimate weekly ICU transfer de
 > **For frequently admitted inpatients, can we predict the risk of unplanned ICU transfer within short-term windows (24 and 48 hours), and how much operational and clinical value does a clinical watchlist provide when it flags the 10% of cases with the highest predicted risk?**
 
 ### Intended Users
-- **Primary Users (Hospital Operation managers & Bed Coordinators):** Utilize the 7-day aggregate bed demand forecaster to proactively rebalance critical care nursing rosters, allocate respiratory equipment, and adjust elective post-operative surgical schedules before bottlenecks occur.
-- **Secondary Users (Rapid Response Teams & Ward Clinicians):** Utilize the patient-level risk watchlist to identify rapidly decompensating frequent admitters up to 24 hours prior to acute failure for timely bedside intervention.
+- **Rapid Response Teams & Ward Clinicians:** Utilize the patient-level risk watchlist to identify rapidly decompensating frequent admitters up to 24 hours prior to acute failure for timely bedside intervention.
 
 ---
 
@@ -50,8 +49,8 @@ Requires **Python 3.12** (`pyproject.toml` pins `>=3.12,<3.13`). About 16 GB of 
 recommended; `labevents` (2.6 GB compressed) is streamed in blocks.
 
 ```bash
-git clone https://github.com/wallrue/Forecasting-Unplanned-Ward-to-ICU-Transfer.git
-cd Forecasting-Unplanned-Ward-to-ICU-Transfer
+git clone https://github.com/alps4u/icu_forecast.git
+cd icu_forecast
 
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
@@ -96,6 +95,25 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda.ipynb
 jupyter nbconvert --to notebook --execute --inplace notebooks/02_pca.ipynb
 ```
 
+### Step 3: Baseline Models (validation split)
+
+```bash
+python -m icu_forecast.models.knn --n-train 0 --n-val 0 
+python -m icu_forecast.models.knn --label y_48h --n-train 0 --n-val 0 
+python -m icu_forecast.models.knn --n-train 0 --n-val 0 --cv                # + 5-fold patient-grouped CV over k on train + val on target y_24
+python -m icu_forecast.models.knn --label y_48h --n-train 0 --n-val 0 --cv  # + 5-fold patient-grouped CV over k on train + val on target y_48 
+```
+
+All models are fitted on the training split and scored on validation; `--test` (reference,
+logreg) also scores the held-out test split and is meant for the final evaluation only.
+
+`models/knn.py` notes:
+- Settings come from the `knn:` block of `config.yaml` (`k_grid: [1, 100, 200, 300, 400]`,
+  `cv_folds: 5`, `cv_n`, `train_curve_n`); `--k` overrides the grid.
+- By default it uses about 20,000 training and 20,000 validation snapshots (whole patients,
+  `train_curve_n`); `--n-train 0 --n-val 0` uses the full splits.
+
+
 ## 5. Repository structure
 
 ```
@@ -113,18 +131,27 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/02_pca.ipynb
 │   ├── features.py           # 08:00 snapshots, 24 h / 48 h labels, 137 features
 │   ├── prepare.py            # imputation, scaling, encoding fitted on train only
 │   └── export_csv.py         # exports processed parquet files to CSV
+│   └── models/               # baseline models (run with python -m icu_forecast.models.<module>)
+│       ├── knn.py            # k-NN classifier: knn.ipynb steps on prepare.py features and split
+│       └── knn.py            # k-NN classifier: knn.ipynb steps on prepare.py features and split
+│
 ├── code/                     # earlier copy of the pipeline scripts (superseded by src/)
 │
 ├── notebooks/
 │   ├── 01_eda.ipynb          # exploratory data analysis
 │   └── 02_pca.ipynb          # PCA on the routine lab panel
+│
 ├── sql/
 │   └── 01_pipeline_validation.sql   # SQL cross-check of the cohort definition
 │
 ├── reports/
 │   ├── IE7275_GroupA_Project_Proposal_M3.pdf   # milestone report (.doc source alongside)
+│   ├── IE7275_GroupA_Project_Proposal_M4.pdf   # milestone report (.doc source alongside)
 │   ├── data_pipeline.md      # before/after counts for every pipeline step
 │   └── figures/              # figures used in the reports
+│
+├── artifacts/                # not tracked by Git; model outputs
+│   └── knn/<label>/          # knn.py results for y_24h / y_48h
 │
 └── data/                     # not tracked by Git; created locally
     ├── raw/                  # original MIMIC-IV files (read-only)

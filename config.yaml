@@ -103,3 +103,13 @@ omr:
     dbp: [20, 160]
     weight_lbs: [60, 700]
     bmi: [10, 80]
+
+# k-NN (src/icu_forecast/models/knn.py; knn10.py reads the same block); command-line --k overrides k_grid
+knn:
+  metric: manhattan                     # knn10.py only: metric for the k sweep and the CV
+  k_grid: [1, 100, 200, 300, 400]
+  weights: [uniform, distance]          # knn10.py only: weightings compared at the best k
+  select_by: [pr_auc, roc_auc]          # knn10.py only: best k is chosen under each of these
+  train_curve_n: 20000                  # training / validation snapshots used (whole patients)
+  cv_folds: 5                           # --cv only
+  cv_n: 100000                          # --cv only: train + val snapshots (whole patients)
