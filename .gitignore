@@ -1,0 +1,19 @@
+# MIMIC-IV data: license forbids redistribution, never commit it --
+# except the two small license/checksum text files, which are safe and useful to keep
+data/*
+!data/raw/
+data/raw/*
+!data/raw/LICENSE.txt
+!data/raw/SHA256SUMS.txt
+
+# generated model artifacts (reproducible from src/ + data/)
+artifacts/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# notebook checkpoints
+.ipynb_checkpoints/

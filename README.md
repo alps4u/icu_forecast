@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Forecasting ICU Bed Demand via Patient Deterioration Modeling
 IE7275 Group A project — *I See You, ICU*.
 Authors: Ka Won Cho, Minh Tuong Le, Shanti Ram Pokhrel.
@@ -8,12 +7,12 @@ Authors: Ka Won Cho, Minh Tuong Le, Shanti Ram Pokhrel.
 ### Problem Statement
 Intensive Care Units (ICUs) face chronic bed capacity and staffing bottlenecks, particularly in healthcare systems strained by demographic aging. Unplanned transfers from general hospital wards into ICUs create severe, unpredictable surges in critical care demand. Conventional capacity planning relies heavily on historical rolling averages (e.g., historical bed utilization), which completely ignore the real-time physiological deterioration of currently admitted inpatients. Conversely, bedside early warning systems (e.g., NEWS2) offer very short lead times (4–12 hours), which is insufficient for forward operational planning.
 
-This project is to develop a predictive model to estimate weekly ICU transfer demand driven by frequently admitted inpatients. The project addresses the following research question:
+This project develops a predictive model that scores each ward patient's short-term risk of unplanned ICU transfer, focused on frequently admitted inpatients. The project addresses the following research question:
 > **For frequently admitted inpatients, can we predict the risk of unplanned ICU transfer within short-term windows (24 and 48 hours), and how much operational and clinical value does a clinical watchlist provide when it flags the 10% of cases with the highest predicted risk?**
 
 ### Intended Users
-- **Primary Users (Hospital Operation managers & Bed Coordinators):** Utilize the 7-day aggregate bed demand forecaster to proactively rebalance critical care nursing rosters, allocate respiratory equipment, and adjust elective post-operative surgical schedules before bottlenecks occur.
-- **Secondary Users (Rapid Response Teams & Ward Clinicians):** Utilize the patient-level risk watchlist to identify rapidly decompensating frequent admitters up to 24 hours prior to acute failure for timely bedside intervention.
+- **Primary Users (Rapid Response Teams & Ward Clinicians):** Use the patient-level 24h/48h risk watchlist to identify rapidly decompensating frequent admitters ahead of acute failure, for timely bedside intervention.
+- **Secondary Users (Hospital Operation Managers & Bed Coordinators):** Use the same patient-level risk scores, aggregated across the ward, to anticipate near-term ICU bed demand and proactively adjust nursing rosters, respiratory equipment, and elective surgical schedules.
 
 ---
 
@@ -94,6 +93,7 @@ python -m icu_forecast.prepare
 python -m icu_forecast.export_csv
 jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda.ipynb
 jupyter nbconvert --to notebook --execute --inplace notebooks/02_pca.ipynb
+python -m icu_forecast.models.train
 ```
 
 ## 5. Repository structure
@@ -110,10 +110,13 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/02_pca.ipynb
 │   ├── config.py             # loads config.yaml, resolves paths from the repo root
 │   ├── clean.py              # cleans raw MIMIC-IV tables, builds the cohort
 │   ├── split.py              # patient-level stratified train/val/test split
-│   ├── features.py           # 08:00 snapshots, 24 h / 48 h labels, 137 features
+│   ├── features.py           # 08:00 snapshots, 24 h / 48 h labels, 96 features
 │   ├── prepare.py            # imputation, scaling, encoding fitted on train only
-│   └── export_csv.py         # exports processed parquet files to CSV
-├── code/                     # earlier copy of the pipeline scripts (superseded by src/)
+│   ├── export_csv.py         # exports processed parquet files to CSV
+│   └── models/
+│       ├── train.py          # M4: the one command -- 5-fold patient-grouped CV for LightGBM
+│       ├── lgbm.py           # LightGBM fit/plot helpers, used by train.py
+│       └── evaluate.py       # shared discrimination/watchlist metrics
 │
 ├── notebooks/
 │   ├── 01_eda.ipynb          # exploratory data analysis
@@ -124,7 +127,11 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/02_pca.ipynb
 ├── reports/
 │   ├── IE7275_GroupA_Project_Proposal_M3.pdf   # milestone report (.doc source alongside)
 │   ├── data_pipeline.md      # before/after counts for every pipeline step
+│   ├── tables/                # M4: committed result tables (small CSVs, not gitignored)
+│   │   └── lgbm_5fold_cv.csv  # per-fold and mean +/- std metrics from models/train.py
 │   └── figures/              # figures used in the reports
+│
+├── artifacts/                 # not tracked by Git; trained models (.joblib), rebuilt by models/train.py
 │
 └── data/                     # not tracked by Git; created locally
     ├── raw/                  # original MIMIC-IV files (read-only)
@@ -142,7 +149,3 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/02_pca.ipynb
 
 Johnson, A., Bulgarelli, L., Pollard, T., Gow, B., Moody, B., Horng, S., Celi, L. A., & Mark, R.
 (2024). *MIMIC-IV* (version 3.1). PhysioNet. https://doi.org/10.13026/kpb9-mt58
-=======
-# ISeeYouICU
-This is the repository for IE7275 GroupA project: I see you, ICU
->>>>>>> 18509ba7a8b137cef0c12c671cf545d33afdbe40
