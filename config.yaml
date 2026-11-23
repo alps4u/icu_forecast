@@ -20,7 +20,13 @@ models:
     reg_lambda: 1.0
     early_stopping_rounds: 150
     early_stopping_val_frac: 0.1
-
+  # k-NN (src/icu_forecast/models/knn.py); --cv uses the same 5 folds as LightGBM 
+  knn:
+    metric: euclidean         
+    k_grid: [1, 50, 100, 200, 300, 400]
+    weights: [uniform, distance]
+    select_by: roc_auc
+    cv_train_n: 20000
 split:
   train: 0.6
   val: 0.2
@@ -118,3 +124,4 @@ omr:
     dbp: [20, 160]
     weight_lbs: [60, 700]
     bmi: [10, 80]
+
