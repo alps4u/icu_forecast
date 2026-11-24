@@ -49,6 +49,15 @@ def build_snapshots(cohort: pd.DataFrame, transfers: pd.DataFrame, cfg: dict, re
         snap[f"y_{h}h"] = ((snap.first_icu_time > snap.snapshot_time) & (snap.first_icu_time <= window_end)).astype("int8")
         report[f"positive_rate_{h}h"] = round(float(snap[f"y_{h}h"].mean()), 5)
 
+        # Ward death inside the window with no prior ICU transfer: a competing outcome,
+        # out of scope for "unplanned ICU transfer" and kept as y=0 (see reports/data_pipeline.md).
+        died_no_icu = (
+            snap.deathtime.notna() & (snap.deathtime > snap.snapshot_time) & (snap.deathtime <= window_end)
+            & (snap[f"y_{h}h"] == 0)
+        )
+        report[f"died_no_icu_in_window_{h}h"] = int(died_no_icu.sum())
+        report[f"died_no_icu_rate_{h}h"] = round(float(died_no_icu.mean()), 5)
+
     snap["hours_since_admit"] = (snap.snapshot_time - snap.admittime).dt.total_seconds() / 3600
     snap["gender_male"] = (snap.gender == "M").astype("int8")
     cols = ["subject_id", *KEYS, "y_24h", "y_48h", "age", "gender_male", "admission_type",
