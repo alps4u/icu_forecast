@@ -98,14 +98,20 @@ python -m icu_forecast.prepare
 python -m icu_forecast.export_csv
 jupyter nbconvert --to notebook --execute --inplace notebooks/01_eda.ipynb
 jupyter nbconvert --to notebook --execute --inplace notebooks/02_pca.ipynb
+
 ```
 
 ### Step 3: Baseline Models (validation split)
 ** Now we have features.csv and features.parquet, let's train with LGBM: 
 
 ```bash
+
+python -m icu_forecast.models.train
+
 python -m icu_forecast.models.knn --cv --label y_24h
 python -m icu_forecast.models.knn --cv --label y_48h
+
+
 ```
 
 All models are fitted on the training split and scored on validation; `--test` (reference,
