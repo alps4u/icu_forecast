@@ -9,7 +9,6 @@ data/raw/*
 # generated model artifacts (reproducible from src/ + data/)
 artifacts/
 results/
-tests/
 
 # Python
 __pycache__/
