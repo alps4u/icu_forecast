@@ -8,12 +8,15 @@ data/raw/*
 
 # generated model artifacts (reproducible from src/ + data/)
 artifacts/
+results/
+tests/
 
 # Python
 __pycache__/
 *.pyc
 .venv/
 *.egg-info/
+.pytest_cache
 
 # notebook checkpoints
 .ipynb_checkpoints/

@@ -120,19 +120,38 @@ def main() -> None:
             # reports/data_pipeline.md); computed here only so plot_accuracy_vs_roc_auc can show why.
             m["accuracy"] = ((p_val >= 0.5) == y_val).mean()
             m["always_negative_accuracy"] = 1 - m["prevalence"]
+
+            # Training-fold scores (M5 overfitting check): same metrics, same fold, on the rows the
+            # model was fit on. A training score close to the validation score is evidence against
+            # overfitting; a training score far above it is evidence for it.
+            p_train = model.predict_proba(X_train)[:, 1]
+            y_train = train_fold[label].to_numpy()
+            m_train = evaluate(y_train, p_train)
+            for key, value in m_train.items():
+                m[f"train_{key}"] = value
+            m["train_accuracy"] = ((p_train >= 0.5) == y_train).mean()
+
             fold_metrics.append(m)
-            print(f"fold {k}: n={m['n']:,} roc_auc={m['roc_auc']:.4f} pr_auc={m['pr_auc']:.4f} "
+            print(f"fold {k}: n={m['n']:,} roc_auc={m['roc_auc']:.4f} (train {m['train_roc_auc']:.4f}) "
+                  f"pr_auc={m['pr_auc']:.4f} (train {m['train_pr_auc']:.4f}) "
                   f"recall_top10={m['recall_top10']:.4f} precision_top10={m['precision_top10']:.4f} "
                   f"accuracy={m['accuracy']:.4f} (always-negative floor={m['always_negative_accuracy']:.4f})")
 
         fm = pd.DataFrame(fold_metrics)
         fold_results[label] = fm
         summary = {"horizon": label, "n_folds": n_splits}
-        for metric in ["roc_auc", "pr_auc", "recall_top10", "precision_top10", "brier", "accuracy"]:
+        core_metrics = ["roc_auc", "pr_auc", "recall_top10", "precision_top10", "precision_at_recall30",
+                        "brier", "accuracy"]
+        for metric in core_metrics:
             summary[f"{metric}_mean"] = fm[metric].mean()
             summary[f"{metric}_std"] = fm[metric].std()
+            train_col = f"train_{metric}"
+            if train_col in fm.columns:
+                summary[f"{train_col}_mean"] = fm[train_col].mean()
+                summary[f"{train_col}_std"] = fm[train_col].std()
         rows.append(summary)
-        print(f"-> mean ROC-AUC across {n_splits} folds: {fm.roc_auc.mean():.4f} (+/- {fm.roc_auc.std():.4f})")
+        print(f"-> mean ROC-AUC across {n_splits} folds: {fm.roc_auc.mean():.4f} (+/- {fm.roc_auc.std():.4f}), "
+              f"vs training {fm.train_roc_auc.mean():.4f} (+/- {fm.train_roc_auc.std():.4f})")
         print(f"-> mean accuracy: {fm.accuracy.mean():.4f}, vs always-negative floor "
               f"{fm.always_negative_accuracy.mean():.4f} -- barely higher despite real ROC-AUC/recall gains")
 
